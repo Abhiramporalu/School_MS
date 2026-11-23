@@ -21,7 +21,18 @@ A full-stack school administration and examination portal built with React, Java
 
 ## Local setup
 
-1. Copy `.env.example` to `backend/.env` and set a unique `SESSION_SECRET` (at least 32 characters). Change the seed passwords before loading demo data.
+1. Create `backend/.env` with your PostgreSQL connection string and a unique `SESSION_SECRET` (at least 32 characters). Optional seed passwords should be unique and changed before loading demo data. For example:
+
+   ```env
+   DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE?sslmode=require"
+   SESSION_SECRET="replace-with-a-long-random-secret-at-least-32-characters"
+   CLIENT_ORIGIN="http://localhost:5173"
+   PORT=4000
+   NODE_ENV="development"
+   SEED_ADMIN_PASSWORD="replace-before-seeding"
+   SEED_TEACHER_PASSWORD="replace-before-seeding"
+   SEED_STUDENT_PASSWORD="replace-before-seeding"
+   ```
 2. Install and generate the database client:
 
    ```sh
