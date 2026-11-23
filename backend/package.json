@@ -1,0 +1,39 @@
+{
+  "name": "@school/backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "build": "esbuild src/index.js prisma/seed.js --outbase=. --outdir=dist --platform=node --format=esm --packages=external --target=node22",
+    "start": "node dist/src/index.js",
+    "test": "vitest run",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate deploy",
+    "db:create-admin": "node prisma/create-admin.js",
+    "db:seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.5.0",
+    "bcryptjs": "^3.0.2",
+    "connect-pg-simple": "^10.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "express-session": "^1.18.1",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0",
+    "pg": "^8.13.3",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12",
+    "prisma": "^6.5.0",
+    "vitest": "^4.1.12"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  }
+}
