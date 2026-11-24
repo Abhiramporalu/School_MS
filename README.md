@@ -101,5 +101,3 @@ npm run db:migrate -w backend
 | `npm run db:migrate -w backend` | Apply committed migrations |
 
 API endpoints and role permissions are described in [docs/API.md](./docs/API.md).
-# School_MS
-# School_MS
