@@ -38,7 +38,7 @@ export default function AuthScreen({ onLogin }) {
             phone: form.get("phone") || undefined
           })
         });
-        setNotice("Signup request received. An administrator must approve your account before you can sign in.");
+        setNotice("Sign-up request received. An administrator must approve it before you can sign in.");
         setMode("login");
         setPassword("");
       } else {
@@ -68,13 +68,13 @@ export default function AuthScreen({ onLogin }) {
           <div><strong>Classroom</strong><span>School management portal</span></div>
         </div>
         <div className="login-welcome">
-          <div className="eyebrow">{isSignup ? "REQUEST AN ACCOUNT" : isForgot ? "ACCOUNT RECOVERY" : "WELCOME BACK"}</div>
+          <div className="eyebrow">{isSignup ? "SIGN UP" : isForgot ? "ACCOUNT RECOVERY" : "WELCOME BACK"}</div>
           <h1>{isSignup ? "Join your school." : isForgot ? "Reset your password." : <>Learning starts<br />with a better view.</>}</h1>
           <p>
             {isSignup
-              ? "Send an account request to your school administrator for approval."
+              ? "Create your account and send a sign-up request to your school administrator for approval."
               : isForgot
-                ? "Password resets are reviewed by a school administrator."
+                ? "Your school administrator will review the password-help request. For privacy, this form will not reveal whether the email matches an account."
                 : "Sign in to manage your school, assessments, and results."}
           </p>
         </div>
@@ -97,14 +97,14 @@ export default function AuthScreen({ onLogin }) {
           {!isForgot && <label className="field"><span>Password</span><input type="password" autoComplete={isSignup ? "new-password" : "current-password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder={isSignup ? "At least 12 characters" : "Enter your password"} required minLength={isSignup ? 12 : undefined} maxLength={128} /></label>}
           <button className="button button-primary login-submit" disabled={loading}>
             {loading ? <span className="spinner spinner-white" /> : isSignup ? <UserPlus size={16} /> : isForgot ? <KeyRound size={16} /> : <LockKeyhole size={16} />}
-            {loading ? "Please wait..." : isSignup ? "Request account" : isForgot ? "Request password reset" : "Sign in to portal"}
+            {loading ? "Please wait..." : isSignup ? "Sign up" : isForgot ? "Request password reset" : "Sign in to portal"}
           </button>
         </form>
         <div className="auth-links">
           {mode === "login" && <>
             <button type="button" onClick={() => { setMode("forgot"); setError(""); setNotice(""); }}>Forgot password?</button>
             <span>·</span>
-            <button type="button" onClick={() => { setMode("signup"); setError(""); setNotice(""); }}>Create account</button>
+            <button type="button" onClick={() => { setMode("signup"); setError(""); setNotice(""); }}>Sign up</button>
           </>}
           {(isSignup || isForgot) && <button type="button" onClick={() => { setMode("login"); setError(""); setNotice(""); }}>Back to sign in</button>}
         </div>

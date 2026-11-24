@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { Router } from "express";
 import bcrypt from "bcryptjs";
-import { Role, RequestStatus } from "@prisma/client";
+import { Role, RequestStatus, StudentStatus } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../db.js";
 import { allowRoles, authenticate } from "../middleware/auth.js";
@@ -66,7 +66,11 @@ authRouter.post("/signup", asyncRoute(async (req, res) => {
 authRouter.post("/forgot-password", asyncRoute(async (req, res) => {
   const { email } = z.object({ email: emailSchema }).parse(req.body);
   const user = await prisma.user.findUnique({ where: { email }, select: { id: true } });
-  if (user) {
+  const studentWithoutLogin = user ? null : await prisma.student.findFirst({
+    where: { email, userId: null, status: StudentStatus.ACTIVE },
+    select: { id: true }
+  });
+  if (user || studentWithoutLogin) {
     const existingRequest = await prisma.passwordResetRequest.findFirst({
       where: { email, status: RequestStatus.PENDING },
       select: { id: true }
@@ -197,11 +201,16 @@ authRouter.get("/admin/password-reset-requests", authenticate, adminOnly, asyncR
       where: { email: request.email },
       include: { teacher: { select: { fullName: true } }, student: { select: { fullName: true } } }
     });
+    const unlinkedStudent = user ? null : await prisma.student.findFirst({
+      where: { email: request.email, userId: null, status: StudentStatus.ACTIVE },
+      select: { fullName: true }
+    });
     return {
       id: request.id,
       email: request.email,
-      fullName: user?.teacher?.fullName ?? user?.student?.fullName ?? "School administrator",
-      role: user?.role ?? null,
+      fullName: user?.teacher?.fullName ?? user?.student?.fullName ?? unlinkedStudent?.fullName ?? "School administrator",
+      role: user?.role ?? (unlinkedStudent ? Role.STUDENT : null),
+      requiresAccountCreation: Boolean(unlinkedStudent),
       createdAt: request.createdAt
     };
   }));
@@ -211,16 +220,35 @@ authRouter.get("/admin/password-reset-requests", authenticate, adminOnly, asyncR
 authRouter.post("/admin/password-reset-requests/:id/complete", authenticate, adminOnly, asyncRoute(async (req, res) => {
   const temporaryPassword = randomBytes(18).toString("base64url");
   const passwordHash = await bcrypt.hash(temporaryPassword, 12);
-  await prisma.$transaction(async (tx) => {
+  const accountCreated = await prisma.$transaction(async (tx) => {
     const request = await tx.passwordResetRequest.findUnique({ where: { id: req.params.id } });
     if (!request || request.status !== RequestStatus.PENDING) throw new HttpError(404, "Pending password-reset request not found");
     const user = await tx.user.findUnique({ where: { email: request.email }, select: { id: true } });
-    if (!user) throw new HttpError(404, "Account no longer exists");
-    await tx.user.update({ where: { id: user.id }, data: { passwordHash } });
+    let accountCreated = false;
+    if (user) {
+      await tx.user.update({ where: { id: user.id }, data: { passwordHash } });
+    } else {
+      const student = await tx.student.findFirst({
+        where: { email: request.email, userId: null, status: StudentStatus.ACTIVE },
+        select: { id: true }
+      });
+      if (!student) throw new HttpError(404, "Account no longer exists");
+      const newUser = await tx.user.create({
+        data: { email: request.email, passwordHash, role: Role.STUDENT }
+      });
+      const linkedStudent = await tx.student.updateMany({
+        where: { id: student.id, userId: null, status: StudentStatus.ACTIVE },
+        data: { userId: newUser.id }
+      });
+      if (linkedStudent.count !== 1) throw new HttpError(409, "Student account was linked by another request");
+      accountCreated = true;
+    }
     await tx.passwordResetRequest.update({ where: { id: request.id }, data: { status: RequestStatus.APPROVED } });
+    return accountCreated;
   });
   res.json({
     temporaryPassword,
+    accountCreated,
     message: "Verify the requester's identity, then share this temporary password with them through a trusted channel."
   });
 }));

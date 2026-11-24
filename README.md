@@ -5,7 +5,7 @@ A full-stack school administration and examination portal built with React, Java
 ## Features
 
 - Session-based authentication with Admin, Teacher, and Student roles.
-- Signup requests for all roles with administrator approval, plus administrator-assisted password recovery.
+- Sign-up requests for all roles with administrator approval, plus administrator-assisted password recovery.
 - Student registration, profiles, search, enrollment changes, deactivation, CSV import, and CSV export.
 - Academic years, classes, sections, subjects, class-teacher assignment, and subject-teacher assignment.
 - Examination setup, schedules, configurable marks thresholds, teacher-scoped marks entry, and mark-change audit records.
@@ -66,7 +66,7 @@ A full-stack school administration and examination portal built with React, Java
 
 Seeding creates `admin@school.local`, `teacher@school.local`, and `student@school.local`. Their passwords are read from `SEED_ADMIN_PASSWORD`, `SEED_TEACHER_PASSWORD`, and `SEED_STUDENT_PASSWORD` in `backend/.env`. They are local demo credentials: replace them and do not use the example passwords in production.
 
-New users can request an Admin, Teacher, or Student account from the sign-in screen. Requests stay pending until an administrator reviews them in **Teaching staff → Signup & password requests**. Password recovery is administrator-assisted: admins verify the requester out of band, generate a one-time temporary password from the same screen, and share it through a trusted channel.
+New users can sign up as an Admin, Teacher, or Student from the sign-in screen. Sign-up requests stay pending until an administrator reviews them in **Teaching staff → Sign-up & password requests**. Password recovery is administrator-assisted: admins verify the requester out of band, generate a one-time temporary password from the same screen, and share it through a trusted channel. Active students with a registered email but no login can also submit a password-help request; after verification, the administrator can create their student login and issue a temporary password. Requests refresh automatically while the admin support panel is open.
 
 ## Database migrations
 

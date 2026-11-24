@@ -12,8 +12,8 @@ export default function AdminRequests() {
   const [temporaryPassword, setTemporaryPassword] = useState("");
   const [notice, setNotice] = useState("");
 
-  async function load() {
-    setLoading(true);
+  async function load(silent = false) {
+    if (!silent) setLoading(true);
     setError("");
     try {
       const [registrationData, resetData] = await Promise.all([
@@ -25,11 +25,15 @@ export default function AdminRequests() {
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Could not load account requests");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => {
+    void load();
+    const refreshTimer = window.setInterval(() => void load(true), 30000);
+    return () => window.clearInterval(refreshTimer);
+  }, []);
 
   async function reviewRegistration(request, action) {
     if (action === "reject" && !window.confirm(`Reject the signup request for ${request.email}?`)) return;
@@ -48,7 +52,8 @@ export default function AdminRequests() {
   }
 
   async function completeReset(request) {
-    if (!window.confirm(`Reset the password for ${request.email}? Verify their identity before sharing the temporary password.`)) return;
+    const action = request.requiresAccountCreation ? "Create a student login and set its password" : "Reset the password";
+    if (!window.confirm(`${action} for ${request.email}? Verify their identity before sharing the temporary password.`)) return;
     setBusyId(request.id);
     setError("");
     setNotice("");
@@ -56,7 +61,7 @@ export default function AdminRequests() {
     try {
       const result = await api(`/auth/admin/password-reset-requests/${request.id}/complete`, { method: "POST" });
       setTemporaryPassword(result.temporaryPassword);
-      setNotice(result.message);
+      setNotice(`${result.accountCreated ? "Student login created. " : ""}${result.message}`);
       await load();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Could not reset password");
@@ -68,7 +73,7 @@ export default function AdminRequests() {
   return (
     <section className="account-requests">
       <div className="account-requests-heading">
-        <div><div className="eyebrow">ACCOUNT SUPPORT</div><h2>Signup & password requests</h2><p>Approve new account requests and assist with password resets.</p></div>
+        <div><div className="eyebrow">ACCOUNT SUPPORT</div><h2>Sign-up & password requests</h2><p>Approve new sign-ups and assist with password resets. New requests refresh automatically.</p></div>
         <button className="button button-quiet" onClick={() => void load()} disabled={loading}>{loading ? "Refreshing..." : "Refresh"}</button>
       </div>
       {error && <ErrorBanner message={error} />}
@@ -80,7 +85,7 @@ export default function AdminRequests() {
       {loading ? <div className="loading-state"><span className="spinner" /> Loading account requests...</div> : (
         <div className="account-request-grid">
           <section className="panel account-request-panel">
-            <div className="panel-heading"><div><h2>Signup requests</h2><p>New accounts remain inactive until approved.</p></div><span className="request-count">{registrations.length}</span></div>
+            <div className="panel-heading"><div><h2>Sign-up requests</h2><p>New accounts remain inactive until approved.</p></div><span className="request-count">{registrations.length}</span></div>
             {!registrations.length ? <EmptyState title="No pending signup requests" message="New requests will appear here for review." /> : registrations.map((request) => (
               <article className="account-request-row" key={request.id}>
                 <div className="account-request-details">
@@ -102,7 +107,7 @@ export default function AdminRequests() {
                   <strong>{request.fullName}</strong><span>{request.email}</span>
                   <small>{request.role ?? "Account"} · {new Date(request.createdAt).toLocaleDateString()}</small>
                 </div>
-                <button className="button button-small button-primary" disabled={busyId === request.id || !request.role} onClick={() => void completeReset(request)}><KeyRound size={14} /> Reset</button>
+                <button className="button button-small button-primary" disabled={busyId === request.id || !request.role} onClick={() => void completeReset(request)}><KeyRound size={14} /> {request.requiresAccountCreation ? "Create login" : "Reset"}</button>
               </article>
             ))}
           </section>

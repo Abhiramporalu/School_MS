@@ -8,8 +8,8 @@ Base path: `/api`. Except for health and authentication endpoints, requests requ
 |---|---|---|---|
 | GET | `/health` | Public | Liveness probe |
 | POST | `/auth/login` | Public, rate-limited | Create a session |
-| POST | `/auth/signup` | Public, rate-limited | Submit an Admin, Teacher, or Student account request for administrator approval |
-| POST | `/auth/forgot-password` | Public, rate-limited | Submit a password-reset request; response does not reveal whether the email is registered |
+| POST | `/auth/signup` | Public, rate-limited | Submit an Admin, Teacher, or Student sign-up request for administrator approval |
+| POST | `/auth/forgot-password` | Public, rate-limited | Submit a password-help request for an existing login or active student with a registered email; response does not reveal whether the email is registered |
 | POST | `/auth/logout` | Authenticated | Destroy the current session |
 | GET | `/auth/me` | Authenticated | Return the current user profile |
 | GET | `/auth/admin/registration-requests` | Admin | List pending account requests |
@@ -20,7 +20,7 @@ Base path: `/api`. Except for health and authentication endpoints, requests requ
 
 Role failures return `403`; missing/expired sessions return `401`. Invalid input returns `400` with Zod validation details. Duplicate unique values return `409`.
 
-Signup requires a full name, email, password (12–128 characters), and requested role. Teacher requests also require an employee number; Student requests require an admission number. No user account is created until an administrator approves the request. Password-help requests use a generic public response; administrators must verify the requester out of band before sharing the one-time temporary password.
+Sign-up requires a full name, email, password (12–128 characters), and requested role. Teacher requests also require an employee number; Student requests require an admission number. No user account is created until an administrator approves the request. Password-help requests use a generic public response; administrators must verify the requester out of band before sharing the one-time temporary password. For an active student with a registered email but no login, completing the request creates and links a student login before issuing the temporary password.
 
 ## School structure
 
