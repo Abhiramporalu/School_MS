@@ -7,6 +7,7 @@ function ResultsPage({ isTeacher = false }) {
   return isTeacher ? /* @__PURE__ */ jsx(TeacherSubjectReports, {}) : /* @__PURE__ */ jsx(PublishedResultsPage, {});
 }
 function TeacherSubjectReports() {
+  // const[exams, setExams] = useState([]);
   const [exams, setExams] = useState([]);
   const [examId, setExamId] = useState("");
   const [subjectId, setSubjectId] = useState("");
