@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { generateAdmissionNumber } from "./admission-number.js";
-#commit
+// #commit
 describe("generateAdmissionNumber", () => {
   it("includes the current year and a unique generated suffix", () => {
     const date = new Date("2026-11-23T00:00:00.000Z");
