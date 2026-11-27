@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { Prisma, Role } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "../src/db.js";
-
+// help
 const email = z.string().email().max(254).parse(process.env.ADMIN_EMAIL ?? "admin@school.local").toLowerCase();
 const password = randomBytes(24).toString("base64url");
 
