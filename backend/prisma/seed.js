@@ -8,6 +8,7 @@ async function passwordHash(name) {
   if (!password || password.length < 12) throw new Error(`${name} must be set to at least 12 characters`);
   return bcrypt.hash(password, 12);
 }
+// comment
 async function main() {
   const year = await prisma.academicYear.upsert({
     where: { name: "2026-2027" },
